@@ -9,9 +9,9 @@ public class ClientRepository: IClientRepository
     {
         _configuration = configuration;
     }
-    public Task<bool> DoesClientExist(int id)
+    public async Task<bool> DoesClientExist(int id)
     {
-        var query = "SELECT 1 FROM Client WHERE ID = @ID";
+        var query = "SELECT 1 FROM clients WHERE ID = @ID";
 
         await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
         await using SqlCommand command = new SqlCommand();
@@ -27,17 +27,30 @@ public class ClientRepository: IClientRepository
         return res is not null;
     }
 
-    public Task<bool> DoesCarExist(int carId)
+    public async Task<bool> DoesCarExist(int id)
+    {
+        var query = "SELECT 1 FROM car WHERE PK = @ID";
+
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+        await using SqlCommand command = new SqlCommand();
+
+        command.Connection = connection;
+        command.CommandText = query;
+        command.Parameters.AddWithValue("@ID", id);
+
+        await connection.OpenAsync();
+
+        var res = await command.ExecuteScalarAsync();
+
+        return res is not null;
+    }
+
+    public async Task<ClientDto> GetClient(int clientId)
     {
         throw new NotImplementedException();
     }
 
-    public Task<ClientDto> GetClient(int clientId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
+    public async Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
     {
         throw new NotImplementedException();
     }
