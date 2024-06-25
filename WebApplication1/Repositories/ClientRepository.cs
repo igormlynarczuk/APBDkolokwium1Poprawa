@@ -153,8 +153,42 @@ public class ClientRepository: IClientRepository
                         Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
                     });
                 }
+                
+                if (client is not null)
+                {
+	                client.CarRentals.Add(new CarRentalDto
+	                {
+		                ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
+		                CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
+		                DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
+		                DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
+		                TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
+		                Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
+	                });
+                }
+                else
+                {
+	                client = new ClientDto()
+	                {
+		                ID = reader.GetInt32(reader.GetOrdinal("ClientID")),
+		                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+		                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+		                Address = reader.GetString(reader.GetOrdinal("Address")),
+		                CarRentals = new List<CarRentalDto>()
+		                {
+			                new CarRentalDto()
+			                {
+				                ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
+				                CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
+				                DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
+				                DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
+				                TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
+				                Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
+			                }
+		                }
+	                };
+                }
             }
- 
             return client;
         }
  
@@ -197,5 +231,4 @@ public class ClientRepository: IClientRepository
                 throw;
             }
         }
-    }
 }
