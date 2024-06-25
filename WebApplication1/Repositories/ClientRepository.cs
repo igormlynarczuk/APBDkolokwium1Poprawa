@@ -4,9 +4,27 @@ namespace WebApplication1.Repositories;
 
 public class ClientRepository: IClientRepository
 {
+    private readonly IConfiguration _configuration;
+    public ClientRepository(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
     public Task<bool> DoesClientExist(int id)
     {
-        throw new NotImplementedException();
+        var query = "SELECT 1 FROM Client WHERE ID = @ID";
+
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+        await using SqlCommand command = new SqlCommand();
+
+        command.Connection = connection;
+        command.CommandText = query;
+        command.Parameters.AddWithValue("@ID", id);
+
+        await connection.OpenAsync();
+
+        var res = await command.ExecuteScalarAsync();
+
+        return res is not null;
     }
 
     public Task<bool> DoesCarExist(int carId)
