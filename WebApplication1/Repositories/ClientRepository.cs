@@ -113,39 +113,39 @@ public class ClientRepository: IClientRepository
     {
 	    var insertClientQuery = @"INSERT INTO Clients (FirstName, LastName, Address) VALUES (@FirstName, @LastName, @Address);
                                       SELECT CAST(SCOPE_IDENTITY() as int);";
-            var insertRentalQuery = @"INSERT INTO CarRentals (ClientID, CarID, DateFrom, DateTo, TotalPrice, Discount)
+	    var insertRentalQuery = @"INSERT INTO CarRentals (ClientID, CarID, DateFrom, DateTo, TotalPrice, Discount)
                                       VALUES (@ClientID, @CarID, @DateFrom, @DateTo, @TotalPrice, @Discount);";
  
-            await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
-            await connection.OpenAsync();
-            var transaction = await connection.BeginTransactionAsync();
+	    await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+	    await connection.OpenAsync();
+	    var transaction = await connection.BeginTransactionAsync();
  
-            try
-            {
-                await using SqlCommand insertClientCommand = new SqlCommand(insertClientQuery, connection, transaction as SqlTransaction);
-                insertClientCommand.Parameters.AddWithValue("@FirstName", newClientWithRental.FirstName);
-                insertClientCommand.Parameters.AddWithValue("@LastName", newClientWithRental.LastName);
-                insertClientCommand.Parameters.AddWithValue("@Address", newClientWithRental.Address);
+	    try
+	    {
+		    await using SqlCommand insertClientCommand = new SqlCommand(insertClientQuery, connection, transaction as SqlTransaction);
+		    insertClientCommand.Parameters.AddWithValue("@FirstName", newClientWithRental.FirstName);
+		    insertClientCommand.Parameters.AddWithValue("@LastName", newClientWithRental.LastName);
+		    insertClientCommand.Parameters.AddWithValue("@Address", newClientWithRental.Address);
  
-                var clientId = (int)await insertClientCommand.ExecuteScalarAsync();
+		    var clientId = (int)await insertClientCommand.ExecuteScalarAsync();
  
-                var totalPrice = (newClientWithRental.DateTo - newClientWithRental.DateFrom).Days * 100;
+		    var totalPrice = (newClientWithRental.DateTo - newClientWithRental.DateFrom).Days * 100;
  
-                await using SqlCommand insertRentalCommand = new SqlCommand(insertRentalQuery, connection, transaction as SqlTransaction);
-                insertRentalCommand.Parameters.AddWithValue("@ClientID", clientId);
-                insertRentalCommand.Parameters.AddWithValue("@CarID", newClientWithRental.CarID);
-                insertRentalCommand.Parameters.AddWithValue("@DateFrom", newClientWithRental.DateFrom);
-                insertRentalCommand.Parameters.AddWithValue("@DateTo", newClientWithRental.DateTo);
-                insertRentalCommand.Parameters.AddWithValue("@TotalPrice", totalPrice);
-				insertRentalCommand.Parameters.AddWithValue("@Discount", newClientWithRental.Discount.HasValue ? newClientWithRental.Discount.Value : DBNull.Value);
+		    await using SqlCommand insertRentalCommand = new SqlCommand(insertRentalQuery, connection, transaction as SqlTransaction);
+		    insertRentalCommand.Parameters.AddWithValue("@ClientID", clientId);
+		    insertRentalCommand.Parameters.AddWithValue("@CarID", newClientWithRental.CarID);
+		    insertRentalCommand.Parameters.AddWithValue("@DateFrom", newClientWithRental.DateFrom);
+		    insertRentalCommand.Parameters.AddWithValue("@DateTo", newClientWithRental.DateTo);
+		    insertRentalCommand.Parameters.AddWithValue("@TotalPrice", totalPrice);
+		    insertRentalCommand.Parameters.AddWithValue("@Discount", newClientWithRental.Discount.HasValue ? newClientWithRental.Discount.Value : DBNull.Value);
  
-                await insertRentalCommand.ExecuteNonQueryAsync();
-                await transaction.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+		    await insertRentalCommand.ExecuteNonQueryAsync();
+		    await transaction.CommitAsync();
+	    }
+	    catch (Exception)
+	    {
+		    await transaction.RollbackAsync();
+		    throw;
+	    }
 	}
 }
