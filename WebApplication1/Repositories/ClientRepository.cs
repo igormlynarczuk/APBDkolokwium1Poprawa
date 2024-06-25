@@ -109,90 +109,7 @@ public class ClientRepository: IClientRepository
         return ClientDto;
     }
 
-    public async Task<ClientDto> GetClientWithRentals(int clientId)
-        {
-            var query = @"SELECT
-								c.ID AS ClientID, c.FirstName, c.LastName, c.Address,
-								cr.ID AS RentalID, cr.CarID, cr.DateFrom, cr.DateTo, cr.TotalPrice, cr.Discount
-								FROM Clients c
-								LEFT JOIN CarRentals cr ON c.ID = cr.ClientID
-								WHERE c.ID = @ClientID";
- 
-            await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
-            await using SqlCommand command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@ClientID", clientId);
- 
-            await connection.OpenAsync();
-            var reader = await command.ExecuteReaderAsync();
- 
-            ClientDto client = null;
- 
-            while (await reader.ReadAsync())
-            {
-                if (client == null)
-                {
-                    client = new ClientDto
-                    {
-                        ID = reader.GetInt32(reader.GetOrdinal("ClientID")),
-                        FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                        LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                        Address = reader.GetString(reader.GetOrdinal("Address")),
-                        CarRentals = new List<CarRentalDto>()
-                    };
-                }
- 
-                if (!reader.IsDBNull(reader.GetOrdinal("RentalID")))
-                {
-                    client.CarRentals.Add(new CarRentalDto
-                    {
-                        ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
-                        CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
-                        DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
-                        DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
-                        TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
-                        Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
-                    });
-                }
-                
-                if (client is not null)
-                {
-	                client.CarRentals.Add(new CarRentalDto
-	                {
-		                ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
-		                CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
-		                DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
-		                DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
-		                TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
-		                Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
-	                });
-                }
-                else
-                {
-	                client = new ClientDto()
-	                {
-		                ID = reader.GetInt32(reader.GetOrdinal("ClientID")),
-		                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-		                LastName = reader.GetString(reader.GetOrdinal("LastName")),
-		                Address = reader.GetString(reader.GetOrdinal("Address")),
-		                CarRentals = new List<CarRentalDto>()
-		                {
-			                new CarRentalDto()
-			                {
-				                ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
-				                CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
-				                DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
-				                DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
-				                TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
-				                Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
-			                }
-		                }
-	                };
-                }
-            }
-            return client;
-        }
- 
-        public async Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
+    public async Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
         {
             var insertClientQuery = @"INSERT INTO Clients (FirstName, LastName, Address) VALUES (@FirstName, @LastName, @Address);
                                       SELECT CAST(SCOPE_IDENTITY() as int);";
@@ -212,7 +129,7 @@ public class ClientRepository: IClientRepository
  
                 var clientId = (int)await insertClientCommand.ExecuteScalarAsync();
  
-                var totalPrice = (newClientWithRental.DateTo - newClientWithRental.DateFrom).Days * 100; // Assuming daily rental rate is 100
+                var totalPrice = (newClientWithRental.DateTo - newClientWithRental.DateFrom).Days * 100;
  
                 await using SqlCommand insertRentalCommand = new SqlCommand(insertRentalQuery, connection, transaction as SqlTransaction);
                 insertRentalCommand.Parameters.AddWithValue("@ClientID", clientId);
