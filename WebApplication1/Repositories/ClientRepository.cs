@@ -110,8 +110,8 @@ public class ClientRepository: IClientRepository
     }
 
     public async Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
-        {
-            var insertClientQuery = @"INSERT INTO Clients (FirstName, LastName, Address) VALUES (@FirstName, @LastName, @Address);
+    {
+	    var insertClientQuery = @"INSERT INTO Clients (FirstName, LastName, Address) VALUES (@FirstName, @LastName, @Address);
                                       SELECT CAST(SCOPE_IDENTITY() as int);";
             var insertRentalQuery = @"INSERT INTO CarRentals (ClientID, CarID, DateFrom, DateTo, TotalPrice, Discount)
                                       VALUES (@ClientID, @CarID, @DateFrom, @DateTo, @TotalPrice, @Discount);";
@@ -147,5 +147,5 @@ public class ClientRepository: IClientRepository
                 await transaction.RollbackAsync();
                 throw;
             }
-        }
+	}
 }
