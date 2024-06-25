@@ -98,39 +98,37 @@ public class ClientRepository: IClientRepository
 				    CarID = reader.GetString(procedureNameOrdinal),
 				    DateFrom = reader.GetString(procedureDescriptionOrdinal),
 				    DateTo = reader.GetString(procedureDescriptionOrdinal),
-				    TotalPrice = 
+				    TotalPrice = reader.GetString(procedureDescriptionOrdinal),
+				    Discount = reader.GetString(procedureDescriptionOrdinal)
 			    });
 		    }
 		    else
 		    {
-			    animalDto = new AnimalDto()
+			    ClientDto = new ClientDto()
 			    {
-				    Id = reader.GetInt32(animalIdOrdinal),
-				    Name = reader.GetString(animalNameOrdinal),
-				    Type = reader.GetString(animalTypeOrdinal),
-				    AdmissionDate = reader.GetDateTime(admissionDateOrdinal),
-				    Owner = new OwnerDto()
+				    ID = reader.GetInt32(animalIdOrdinal),
+				    FirstName = reader.GetString(animalNameOrdinal),
+				    LastName = reader.GetString(animalTypeOrdinal),
+				    Address = reader.GetString(animalTypeOrdinal),
+				    CarRentals = new List<CarRentalDto>()
 				    {
-					    Id = reader.GetInt32(ownerIdOrdinal),
-					    FirstName = reader.GetString(firstNameOrdinal),
-					    LastName = reader.GetString(lastNameOrdinal),
-				    },
-				    Procedures = new List<ProcedureDto>()
-				    {
-					    new ProcedureDto()
+					    new CarRentalDto()
 					    {
-						    Date = reader.GetDateTime(dateOrdinal),
-						    Name = reader.GetString(procedureNameOrdinal),
-						    Description = reader.GetString(procedureDescriptionOrdinal)
+						    ID = reader.GetDateTime(dateOrdinal),
+						    CarID = reader.GetString(procedureNameOrdinal),
+						    DateFrom = reader.GetString(procedureDescriptionOrdinal),
+						    DateTo = reader.GetString(procedureDescriptionOrdinal),
+						    TotalPrice = reader.GetString(procedureDescriptionOrdinal),
+						    Discount = reader.GetString(procedureDescriptionOrdinal)
 					    }
 				    }
 			    };
 		    }
 	    }
 
-	    if (animalDto is null) throw new Exception();
+	    if (ClientDto is null) throw new Exception();
         
-        return animalDto;
+        return ClientDto;
     }
 
     public async Task AddNewClientWithRental(NewClientWithRentalDto newClientWithRental)
