@@ -48,43 +48,20 @@ public class ClientRepository: IClientRepository
     public async Task<ClientDto> GetClient(int id)
     {
         var query = @"SELECT 
-							Client.ID AS ClientID,
-							Animal.Name AS AnimalName,
-							Type,
-							AdmissionDate,
-							Owner.ID as OwnerID,
-							FirstName,
-							LastName,
-							Date,
-							[Procedure].Name AS ProcedureName,
-							Description
-						FROM Animal
-						JOIN Owner ON Owner.ID = Animal.Owner_ID
-						JOIN Procedure_Animal ON Procedure_Animal.Animal_ID = Animal.ID
-						JOIN [Procedure] ON [Procedure].ID = Procedure_Animal.Procedure_ID
-						WHERE Animal.ID = @ID";
+                            c.ID AS ClientID, c.FirstName, c.LastName, c.Address,
+                            cr.ID AS RentalID, cr.CarID, cr.DateFrom, cr.DateTo, cr.TotalPrice, cr.Discount
+                          FROM Clients c
+                          LEFT JOIN CarRentals cr ON c.ID = cr.ClientID
+                          WHERE c.ID = @ClientID";
 	    
-	    await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
-	    await using SqlCommand command = new SqlCommand();
-
-	    command.Connection = connection;
-	    command.CommandText = query;
-	    command.Parameters.AddWithValue("@ID", id);
-	    
-	    await connection.OpenAsync();
-
-	    var reader = await command.ExecuteReaderAsync();
-
-	    var animalIdOrdinal = reader.GetOrdinal("AnimalID");
-	    var animalNameOrdinal = reader.GetOrdinal("AnimalName");
-	    var animalTypeOrdinal = reader.GetOrdinal("Type");
-	    var admissionDateOrdinal = reader.GetOrdinal("AdmissionDate");
-	    var ownerIdOrdinal = reader.GetOrdinal("OwnerID");
-	    var firstNameOrdinal = reader.GetOrdinal("FirstName");
-	    var lastNameOrdinal = reader.GetOrdinal("LastName");
-	    var dateOrdinal = reader.GetOrdinal("Date");
-	    var procedureNameOrdinal = reader.GetOrdinal("ProcedureName");
-	    var procedureDescriptionOrdinal = reader.GetOrdinal("Description");
+        await using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Default"));
+        await using SqlCommand command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@ClientID", id);
+ 
+        await connection.OpenAsync();
+        var reader = await command.ExecuteReaderAsync();
+ 
+        ClientDto client = null;
 
 	    ClientDto ClientDto = null;
 
@@ -94,32 +71,32 @@ public class ClientRepository: IClientRepository
 		    {
 			    ClientDto.CarRentals.Add(new CarRentalDto()
 			    {
-				    ID = reader.GetDateTime(dateOrdinal),
-				    CarID = reader.GetString(procedureNameOrdinal),
-				    DateFrom = reader.GetString(procedureDescriptionOrdinal),
-				    DateTo = reader.GetString(procedureDescriptionOrdinal),
-				    TotalPrice = reader.GetString(procedureDescriptionOrdinal),
-				    Discount = reader.GetString(procedureDescriptionOrdinal)
+				    ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
+				    CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
+				    DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
+				    DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
+				    TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
+				    Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
 			    });
 		    }
 		    else
 		    {
 			    ClientDto = new ClientDto()
 			    {
-				    ID = reader.GetInt32(animalIdOrdinal),
-				    FirstName = reader.GetString(animalNameOrdinal),
-				    LastName = reader.GetString(animalTypeOrdinal),
-				    Address = reader.GetString(animalTypeOrdinal),
+				    ID = reader.GetInt32(reader.GetOrdinal("ClientID")),
+				    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+				    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+				    Address = reader.GetString(reader.GetOrdinal("Address")),
 				    CarRentals = new List<CarRentalDto>()
 				    {
 					    new CarRentalDto()
 					    {
-						    ID = reader.GetDateTime(dateOrdinal),
-						    CarID = reader.GetString(procedureNameOrdinal),
-						    DateFrom = reader.GetString(procedureDescriptionOrdinal),
-						    DateTo = reader.GetString(procedureDescriptionOrdinal),
-						    TotalPrice = reader.GetString(procedureDescriptionOrdinal),
-						    Discount = reader.GetString(procedureDescriptionOrdinal)
+						    ID = reader.GetInt32(reader.GetOrdinal("RentalID")),
+						    CarID = reader.GetInt32(reader.GetOrdinal("CarID")),
+						    DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
+						    DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
+						    TotalPrice = reader.GetInt32(reader.GetOrdinal("TotalPrice")),
+						    Discount = reader.IsDBNull(reader.GetOrdinal("Discount")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("Discount"))
 					    }
 				    }
 			    };
