@@ -18,11 +18,11 @@ public class ClientController : ControllerBase
     public async Task<IActionResult> GetClient(int id)
     {
         if (!await _clientRepository.DoesClientExist(id))
-            return NotFound($"Animal with given ID - {id} doesn't exist");
+            return NotFound($"Client with given ID - {id} doesn't exist");
 
-        var animal = await _clientRepository.GetClient(id);
+        var client = await _clientRepository.GetClient(id);
             
-        return Ok(animal);
+        return Ok(client);
     }
     
 }
